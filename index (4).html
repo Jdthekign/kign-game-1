@@ -1,0 +1,728 @@
+<html>
+<head>
+<title> A testing thing </title>
+<style>
+h1 {font:28px Helvetica; text-align: center;}
+h2 {font:18px Helvetica; text-align: center}
+tr,td {font: 14px Verdana; text-align: center; background: #FFFFE0; border-color: black}
+table {margin-left: auto; margin-right: auto; border: 1px solid black; background: black}
+p {text-align: center}
+</style>
+</head>
+<body>
+<p><button id = "testButton" onclick = "resetFunction()">Reset</button></p>
+<!--<button id = "bugfix" onclick = "fixFunction()">Press this to fix</button>-->    
+    <h1>Player</h1>
+    <table border = 1>
+        <tr>
+            <td>Max Health</td>
+            <td>Health</td>
+            <td>Armour</td>
+            <td>Damage</td>
+            <td>Dexterity</td>
+            <td>Strength</td>
+            <td>Constitution</td>
+            <td>Wisdom</td>
+            <td>Experience</td>
+            <td>Exp to level</td>
+            <td>Level</td>
+            <td>Kills</td>
+            <td>Deaths</td>
+        </tr>
+        <tr>
+            <td><p id = "playerMaxHealth"></p></td>
+            <td><p id = "playerHealth"></p></td>
+            <td><p id = "playerArmour"> </p></td>
+            <td><p id = "playerDamage"> </p></td>
+            <td><p id = "playerDex"> </p></td>
+            <td><p id = "playerStr"> </p></td>
+            <td><p id = "playerCon"> </p></td>
+            <td><p id = "playerWis"> </p></td>
+            <td><p id = "experience"></p></td>
+            <td><P id = "levelreq"></P></td>
+            <td><p id = "level"></p></td>
+            <td><p id = "killCount"></p></td>
+            <td><p id = "deathCount"></p></td>
+        </tr>
+    </table>
+    </br>
+    <table>
+        <tr>
+            <td><button type = "button" onclick= "upgradeWeapon()" value = "Button Text" id = "weaponButton" title = "Increases damage by 1"></button></td>
+            <td><button type = "button" onclick= "healPlayer()" title = "Heals the player to full health" id = "healPlayer"></button></td>
+            <td><button type = "button" onclick= "trainDex()" title = "Increases dexterity by 1" id = "dexButton">Train Dex (250g)</button></td>
+            <td><button type = "button" onclick= "trainStr()" title = "Increases strength by 1" id = "strButton">Train Str (250g)</button></td>
+        </tr>
+        <tr>
+            <td><button type = "button" onclick= "upgradeArmour()" value = "Button Text" id = "armourButton" title = "Increases armour by 1"></button></td>
+            <td><button type = "button" onclick= "restoreMana" title = "Restore 50 mana">Restore Mana: 50g</button></td>
+            <td><button type = "button" onclick= "trainCon()" title = "Increases constitution by 1" id = "conButton">Train Con (250g)</button></td>
+            <td><button type = "button" onclick= "trainWis()" title = "Increases constitution by 1" id = "wisButton">Train Wis (250g)</button></td>
+        </tr>
+    </table>
+    <p>
+    <table border = 1>
+         <tr>
+             <td>Gold</td>
+             <td>Loot</td>
+         </tr>
+         <tr>
+            <td><p id = "playerGold"></p></td>
+            <td><p id = "playerLoot"></p></td> 
+        </tr>
+    </table>
+    <p><button type = "button" onclick="sellLoot()" title = "Sells loot for 5g each">Sell loot</button></p> 
+</p>
+    <p>
+    
+    <h2>Magic</h2>    
+    <table border = 1> 
+        
+        <tr>
+            <td>Max Mana</td>
+            <td>Mana</td>
+        </tr>
+        <tr>
+            <td><p id = "playerMana"></p></td>
+            <td><p id = "playerMaxMana"></p></td>
+        </tr>
+        <tr>
+            <td><button type = "button" onclick = "lightningShock()" title = "Shock an enemy">Static Shock (5 Mana)</button></td>
+            <td><button type = "button" onclick = "iceSpike()" title = "Shoot a shard of ice at an enemy">Ice Shard (10 mana) </button></td>
+        </tr>
+        <tr>
+            <td><button type = "button" onclick = "immolate()" title = "Set an enemy alight">Immolate (20 mana)</button></td>
+            <td><button type = "button" onclick = "lifeDrain()" title = "Steal the enemy's life force">Life Drain (35 mana)</button></td>
+        </tr>
+    </table>
+    
+</br>
+            <table border = 1>
+                <tr>
+                    <td>Damage dealt</td>
+                    <td>Damage recieved</td>
+                </tr>
+                <tr>
+                    <td><p id = "damageDealt"></p></td>
+                    <td><p id = "damageRecieved"></p></td>
+                </tr>
+            </table>
+</br></br></p>
+<h2 id = "enemyName">Enemy</h2>
+    <table border = 1>
+        <tr>
+            <td>Health</td>
+            <td>Armour</td>
+            <td>Damage</td>
+            <td>Crit chance</td>
+        </tr>
+        <tr>
+            <td><p id = "enemyHealth"></p></td>
+            <td><p id = "enemyArmour"></p></td>
+            <td><p id = "enemyDamage"></p></td>
+            <td><p id = "enemyCrit"></p></td>
+        </tr>
+    </table>
+    <script>
+      
+    
+    var levelReq;    
+    var damageRecieved;
+    var damageDealt;    
+    var enemyAlive;
+    var weaponUpgradeCount;
+    var weaponUpgradeCost;
+    var armourUpgradeCount;
+    var armourUpgradeCost;
+    var weaponCostString = "";
+    var armourCostString = "";
+    var healCostString = "";
+    var trainingAmount;    
+    
+        //Creates the player object with arbitrary values currently - loads from cookies
+    if(JSON.parse(localStorage.getItem("playerLevel")) != null){    
+        var player = {
+        con: JSON.parse(localStorage.getItem("playerCon")),
+        wis: JSON.parse(localStorage.getItem("playerWis")),
+        dex: JSON.parse(localStorage.getItem("playerDex")),
+        str: JSON.parse(localStorage.getItem("playerStr")),
+        mana: JSON.parse(localStorage.getItem("playerMana")),
+        maxHealth: 150,
+        maxMana: 50,
+        health: JSON.parse(localStorage.getItem("playerHealth")),
+        damage: 0,
+        weapon: JSON.parse(localStorage.getItem("playerWeapon")),
+        worn: 0,
+        armour: JSON.parse(localStorage.getItem("playerArmour")),
+        level: JSON.parse(localStorage.getItem("playerLevel")),
+        experience: JSON.parse(localStorage.getItem("playerExp")),
+        gold: JSON.parse(localStorage.getItem("playerGold")),
+        loot: JSON.parse(localStorage.getItem("playerLoot")),
+        killCount: JSON.parse(localStorage.getItem("playerKills")),
+        deathCount: JSON.parse(localStorage.getItem("playerDeaths"))};
+        weaponUpgradeCount = JSON.parse(localStorage.getItem("weaponUpgradeCount"));
+        armourUpgradeCount = JSON.parse(localStorage.getItem("armourUpgradeCount"));
+        weaponUpgradeCost = 150 * weaponUpgradeCount;
+        armourUpgradeCost = 150 * armourUpgradeCount;
+        weaponCostString = "Upgrade weapon: " + weaponUpgradeCost;
+        armourCostString = "Upgrade armour: " + armourUpgradeCost;
+        trainingAmount = JSON.parse(localStorage.getItem("trainingAmount"));
+        trainingCost = 250 + trainingAmount * 125;
+    }
+        else{
+            var player = {
+        con: 10,
+        wis: 10,
+        dex: 10,
+        str: 10,
+        maxMana: 50,
+        mana: 0,
+        maxHealth: 150,
+        health: 150,
+        damage: 0,
+        weapon: 0,
+        worn: 0,
+        armour: 0,
+        experience: 0,
+        level: 1,
+        gold: 300,
+        loot: 0,
+        killCount: 0,
+        deathCount: 0
+            };
+    weaponUpgradeCount = 1;
+    armourUpgradeCount = 1;
+    weaponUpgradeCost = 150;
+    armourUpgradeCost = 150;
+    weaponCostString = "Upgrade weapon: " + weaponUpgradeCost;
+    armourCostString = "Upgrade armour: " + armourUpgradeCost;
+    trainingAmount = 1;
+    trainingCost = 250;
+        };
+        
+    //Constructor for the enemy - add weapon/armour drops here at some point  
+    function EnemyGen(){
+        var enemyVariety = Math.random();
+        if (enemyVariety > 0.65){
+            this.name = "Goblin";
+            this.health = Math.floor(40 + Math.floor(Math.random()*10)*(1+player.level*0.1));
+            this.damage = Math.floor(10 + Math.floor(Math.random()*15)*(1+player.level*0.05));
+            this.crit = 0.3;
+            this.armour = Math.floor(1 + Math.floor(Math.random()*7)*(1+player.level*0.01));
+            this.gold = 10 + this.damage;
+            this.expGain = Math.floor((((1+this.crit)*(this.health+this.damage+this.armour))*player.wis/10));
+        }
+        else if(enemyVariety <= 0.65 && enemyVariety > 0.4){
+            this.name = "Orc";
+            this.health = Math.floor(60 + Math.floor(Math.random()*100)*(1+player.level*0.1));
+            this.damage = Math.floor(10 + Math.floor(Math.random()*10)*(1+player.level*0.05));
+            this.crit = 0.15;
+            this.armour = Math.floor(1 + Math.floor(Math.random()*10)*(1+player.level*0.01));
+            this.gold = 10 + this.damage;
+            this.expGain = Math.floor(((1+this.crit)*(this.health+this.damage+this.armour)*player.wis/10));
+        }
+        else if(enemyVariety <= 0.4 && enemyVariety > 0.15){
+            this.name = "Giant Spider";
+            this.health = Math.floor(70 + Math.floor(Math.random()*150)*(1+player.level*0.1));
+            this.damage = Math.floor(5 + Math.floor(Math.random()*10)*(1+player.level*0.05));
+            this.crit = 0.5;
+            this.armour = Math.floor(1 + Math.floor(Math.random()*2)*(1+player.level*0.01));
+            this.gold = 10 + this.damage;
+            this.expGain = Math.floor(((1+this.crit)*(this.health+this.damage+this.armour)*player.wis/10));
+        }
+        else{
+            this.name = "Ghost";
+            this.health = Math.floor(40 + Math.floor(Math.random()*80)*(1+player.level*0.1));
+            this.damage = Math.floor(20 + Math.floor(Math.random()*10)*(1+player.level*0.05));
+            this.crit = 0.05;
+            this.armour = 0;
+            this.gold = 50 + this.damage;
+            this.expGain = Math.floor(((1+this.crit)*(this.health+this.damage+this.armour)*player.wis/10));
+        };   
+    }
+        var enemy = new EnemyGen();
+       
+        
+        
+        //Checks to see if enemy is still alive, then rolls a new enemy if there is none
+        var enemyCheck = setInterval(function(){
+            if(enemy.health <= 0){
+                player.experience += parseInt((enemy.expGain).toFixed(0));
+                player.gold += enemy.gold;
+                if(player.loot <= 100){
+                    player.loot++;
+                };
+                enemy = new EnemyGen();
+                player.killCount++;
+                //alert("Enemy defeated!");
+            };
+        },100);
+        //Checks if the player is still alive, then reduces exp by half if they aren't
+        var playerCheck = setInterval(function(){
+            if(player.health <= 0){
+                player.experience = Math.floor(player.experience/2);
+                player.deathCount++;
+                player.health = player.maxHealth;
+                player.gold -= player.level*50;
+                player.loot--;
+                if(player.loot < 0){
+                    player.loot = 0;
+                };
+                if(player.gold < 0){
+                    player.gold = 0;
+                };
+                
+            };
+        },100);
+        
+        //Money Section
+        
+        
+        
+        //Sells player's loot for 5 gold each 
+        var sellLoot = function(){
+            player.gold = player.gold + player.loot*5;
+            player.loot = 0;
+        };
+        //Functions to trade money for levels in attributes
+        var trainDex = function(){
+            if(player.gold > trainingCost){
+                player.gold = player.gold - trainingCost;
+                player.dex++;
+                trainingAmount++;
+            };
+        };
+        var trainCon = function(){
+            if(player.gold > trainingCost){
+                player.gold = player.gold - trainingCost;
+                player.con++;
+                trainingAmount++;
+            };
+        };
+        var trainWis = function(){
+            if(player.gold > trainingCost){
+                player.gold = player.gold - trainingCost;
+                player.wis++;
+                trainingAmount++;
+            };
+        };
+        var trainStr = function(){
+            if(player.gold > trainingCost){
+                player.gold = player.gold - trainingCost;
+                player.str++;
+                trainingAmount++;
+            };
+        };
+        //Restores mana
+        var restoreMana = function(){
+            if(player.gold >= 50){
+                player.gold -= 50;
+                player.mana = player.mana + 50;
+                if (player.mana > player.maxMana){
+                    player.mana = player.maxMana;
+                };
+            };
+        };
+        //Heals character
+        var healPlayer = function(){
+            if(player.gold >= player.maxHealth/5){
+                player.gold = player.gold - player.maxHealth/5;
+                player.health = player.maxHealth;
+                }
+            };
+        //Armour and weapon upgrade functions
+        var upgradeArmour = function(){
+            if(player.gold >= armourUpgradeCost){
+                player.gold = player.gold - armourUpgradeCost;
+                player.worn++;
+                armourUpgradeCount++;
+                armourCostString = "Upgrade armour: " + armourUpgradeCost+ "g";
+                document.getElementById("armourButton").innerHTML = armourCostString;
+            };
+        } 
+        var upgradeWeapon = function(){
+            if(player.gold >= weaponUpgradeCost){
+                player.gold = player.gold - weaponUpgradeCost;
+                player.weapon++;
+                weaponUpgradeCount++;
+                weaponCostString = "Upgrade weapon: " + weaponUpgradeCost + "g";
+                document.getElementById("weaponButton").innerHTML = weaponCostString;
+                
+            };
+        };
+        //WORKING ON THIS --- Constructor for weapons
+        function weaponGeneration(){
+            //Function used to roll all the mods for weapons (stats + lifesteal). Does it the amount of times as dictated by the individual modRollAmount that varies by rarity.
+            function modRollFunc(modRollAmount){    
+                    this.statModifier = true;
+                    for (modRollAmount > 0: modRollAmount--){ 
+                        var modRoll = Math.random();
+                        if (modRoll >= 0.8){
+                            if(this.lifesteal == false){
+                                this.lifesteal = true;
+                                this.statVal += 3;
+                            }
+                            else{
+                                modRollAmount++;
+                            }
+                        }
+                        else if (modRoll >= 0.6 && modRoll < 0.8){
+                            this.dexMod += Math.ceil(Math.random()*3);
+                            this.statVal += this.dexMod;
+                        }
+                        else if (modRoll >= 0.4 && modRoll < 0.6){
+                            this.strMod += Math.ceil(Math.random()*3);
+                            this.statVal += this.strMod;
+                        }
+                        else if (modRoll >= 0.2 && modRoll < 0.4){
+                            this.conMod += Math.ceil(Math.random()*3);
+                            this.statVal += this.conMod;
+                        }
+                        else if (modRoll >= 0 && modRoll < 0.2){
+                            this.wisMod += Math.ceil(Math.random()*3);
+                            this.statVal += this.wisMod;
+                        }
+                    }
+                }
+            
+            
+            
+            
+            //Rolls for weapon type, more can be added later
+            var weaponTypeRoll = Math.random();
+            if(weaponTypeRoll >= 0.75){
+                this.weaponType = "Dagger";
+                this.damageSpread = 1.1;
+            }
+            else if(weaponTypeRoll >= 0.5 && weaponTypeRoll < 0.75){
+                this.weaponType = "Sword";
+                this.damageSpread = 1.2;
+            }
+            else if(weaponTypeRoll >= 0.25 && weaponTypeRoll < 0.5){
+                this.weaponType = "Battleaxe";
+                this.damageSpread = 1.35;
+            }
+            else{
+                this.weaponType = "Mace";
+                this.damageSpread = 1.5;
+            }
+            //Rolls for rarity and consequent stats: Rarity split is 50:30:15:5 Common:Uncommon:Rare:Legendary
+            var weaponRarity = Math.random();
+            if(weaponRarity >= 0.5){
+                this.rarity = "Common";
+                this.damage = Math.floor(Math.random()*10);
+                this.pierce = Math.floor(Math.random()*3);
+                this.dexMod = 0;
+                this.strMod = 0;
+                this.conMod = 0;
+                this.wismod = 0;
+                this.statVal = 0;
+                this.statModifier = false;
+                this.buyPrice = this.damage * 7 + this.pierce * 2;
+                this.sellPrice = Math.floor(this.buyprice/2);
+            }
+            else if(weaponRarity < 0.5 && weaponRarity >= 0.2){
+                this.rarity ="Uncommon";
+                this.damage = Math.floor(Math.random()*12);
+                this.pierce = Math.floor(Math.random()*4);
+                this.dexMod = 0;
+                this.strMod = 0;
+                this.conMod = 0;
+                this.wismod = 0;
+                this.statVal = 0;
+                var modRollAmount = Math.ceil(Math.random()*2) - 1;
+                if(modRollAmount != 0){
+                    modRollFunc(modRollAmount);
+                }
+                
+                if (this.statModifier = true){
+                    this.buyPrice = this.damage * 7 + this.pierce * 2 + this.statVal * 10;
+                    
+                }
+                else{
+                     this.buyPrice = this.damage * 7 + this.pierce * 2;
+                }
+                this.sellPrice = Math.floor(this.buyPrice/2);
+                
+            }
+            else if(weaponRarity >= 0.05 && weaponRarity < 0.2){
+                this.rarity = "Rare";
+                this.damage = Math.floor(Math.random()*15);
+                this.pierce = Math.floor(Math.random()*5);
+                this.dexMod = 0;
+                this.strMod = 0;
+                this.conMod = 0;
+                this.wismod = 0;
+                this.statVal = 0;
+                var modRollAmount = Math.ceil(Math.random()*3) - 1;
+                if(modRollAmount != 0){
+                    modRollFunc(modRollAmount);
+                }
+                else{
+                    this.statModifier = false;
+                }
+                if (this.statModifier = true){
+                    this.buyPrice = this.damage * 7 + this.pierce * 2 + this.statVal * 10;
+                    
+                }
+                else{
+                     this.buyPrice = this.damage * 7 + this.pierce * 2;
+                }
+                this.sellPrice = Math.floor(this.buyPrice/2);
+            
+            }
+            //CONTINUE WORKING FROM HERE, WEAPON GEN is not ComPLETE
+            else{
+                this.rarity = "Legendary";
+            }
+        
+        
+        
+        //Combat section
+        
+        
+        //Spell functions
+        var immolate = function(){
+            if(player.mana >= 20){
+                player.mana -= 20;
+                enemy.health -= 10 + player.wis * 3;
+            };
+        };
+            
+        var iceSpike = function(){
+            if(player.mana >= 10){
+                player.mana -= 10;
+                enemy.health -= 15 + player.wis;
+            };
+        };
+        var lifeDrain = function(){
+             if(player.mana >= 35){
+                 player.mana -= 35;
+                 player.health += player.wis + 15;
+                 enemy.health -= player.wis*3 + 15;
+                 if(player.health > player.maxHealth){
+                     player.health = player.maxHealth;
+                 };
+             };
+        };
+        var lightningShock = function(){
+            if(player.mana >= 5){
+                player.mana -= 5;
+                enemy.health -= 10;
+            };
+        };
+            
+        
+        //Combat engine
+        setInterval(function(){
+                player.mana = player.mana + Math.floor(player.wis/3);
+                if(player.mana > player.maxMana){
+                    player.mana = player.maxMana;
+                };
+                
+                var playerCrit = ((Math.random()*player.dex).toFixed(2))/player.dex;
+                var damToEnemy = 0;
+                var enemyCrit = Math.random().toFixed(2);
+                var damToPlayer = 0;
+                //alert(playerCrit + " " + damToEnemy + " " + enemyCrit + " " + damToPlayer);
+                if(playerCrit > 4.5){
+                    damToEnemy = (player.damage-enemy.armour)*2;
+                    if(damToEnemy < 2){
+                        damToEnemy = 2;
+                    }
+                    //alert(damToEnemy);
+                }
+                else{
+                    damToEnemy = (player.damage-enemy.armour);
+                    if(damToEnemy < 1){
+                        damToEnemy = 1;
+                    }
+                    //alert(damToEnemy);
+                }
+                if(enemyCrit < enemy.crit){
+                    damToPlayer = (enemy.damage - player.armour)*2;
+                        if(damToPlayer < 1){
+                            damToPlayer = 2;
+                        }
+                    
+                }
+                else{
+                    damToPlayer = enemy.damage - player.armour;
+                    if(damToPlayer < 1){
+                        damToPlayer = 1;
+                    };
+                }
+            damageRecieved = (damToPlayer).toFixed(0);
+            damageDealt = (damToEnemy).toFixed(0); 
+            
+            enemy.health -= (damToEnemy).toFixed(0);
+            player.health -= (damToPlayer).toFixed(0);
+        
+        }, 1000);
+        
+        //Updates the values of the players stats and costs of training/items, in case of changes   
+        setInterval(function(){
+            player.damage = Math.floor(5 + player.str + player.dex * 0.5 + player.weapon);
+            player.armour = Math.floor(0.3 * player.dex + 0.6 * player.con + player.worn);
+            player.maxHealth = Math.floor((50 + 10 *player.con + 5*player.str));
+            player.maxMana = Math.floor(5*player.wis);
+            levelReq = player.level *1100 + 100 * trainingAmount - 50 * player.deathCount;
+            if(player.experience > levelReq){
+                var statRoll = Math.random();
+                if (statRoll >= 0.75){
+                    player.dex++;
+                }
+                else if(statRoll < 0.75 && statRoll > 0.5){
+                    player.str++;
+                }
+                else if(statRoll < 0.5 && statRoll > 0.25){
+                    player.con++;
+                }
+                else if(statRoll < 0.25){
+                    player.wis++;
+                }
+                
+                player.experience -= levelReq;
+                player.level++;
+                player.health = player.maxHealth;
+                player.mana = player.maxMana;
+              
+            };
+        armourUpgradeCost = 150 * armourUpgradeCount;
+        weaponUpgradeCost = 150 * weaponUpgradeCount;
+        healCost = player.maxHealth/5;
+        weaponCostString = "Upgrade weapon: " + weaponUpgradeCost + "g";
+        armourCostString = "Upgrade armour: " + armourUpgradeCost + "g";           
+        healCostString = "Heal: " + healCost + "g";
+        trainingCost = 250 + trainingAmount * 125;
+        strCostString = "Train strength: " + trainingCost + "g"
+        dexCostString = "Train dexterity: " + trainingCost + "g"
+        conCostString = "Train constitution: " + trainingCost + "g"
+        wisCostString = "Train wisdom: " + trainingCost + "g"
+        //player.experience = Math.floor(player.experience);
+            
+        },500);
+       //Updates the HTML with player stats and enemy stats 
+        var pageUpdate = setInterval(function(){ 
+            document.getElementById("playerMaxHealth").innerHTML = player.maxHealth;
+            document.getElementById("playerMana").innerHTML = player.mana;
+            document.getElementById("playerHealth").innerHTML = player.health;
+            document.getElementById("playerArmour").innerHTML = player.armour;
+            document.getElementById("playerDamage").innerHTML = player.damage;
+            document.getElementById("playerDex").innerHTML = player.dex;
+            document.getElementById("playerStr").innerHTML = player.str;
+            document.getElementById("playerCon").innerHTML = player.con;
+            document.getElementById("playerWis").innerHTML = player.wis;
+            document.getElementById("experience").innerHTML = player.experience;
+            document.getElementById("level").innerHTML = player.level;
+            document.getElementById("enemyHealth").innerHTML = enemy.health;
+            document.getElementById("enemyArmour").innerHTML = enemy.armour;
+            document.getElementById("enemyDamage").innerHTML = enemy.damage;
+            document.getElementById("enemyCrit").innerHTML = enemy.crit;
+            document.getElementById("damageRecieved").innerHTML = damageRecieved;
+            document.getElementById("damageDealt").innerHTML = damageDealt;
+            document.getElementById("killCount").innerHTML = player.killCount;
+            document.getElementById("deathCount").innerHTML = player.deathCount;
+            document.getElementById("playerLoot").innerHTML = player.loot;
+            document.getElementById("playerGold").innerHTML = player.gold;
+            document.getElementById("weaponButton").innerHTML = weaponCostString;
+            document.getElementById("armourButton").innerHTML = armourCostString;
+            document.getElementById("enemyName").innerHTML = enemy.name;
+            document.getElementById("healPlayer").innerHTML = healCostString;
+            document.getElementById("strButton").innerHTML = strCostString;
+            document.getElementById("dexButton").innerHTML = dexCostString;
+            document.getElementById("conButton").innerHTML = conCostString;
+            document.getElementById("wisButton").innerHTML = wisCostString;
+            document.getElementById("levelreq").innerHTML = levelReq;
+            document.getElementById("playerMaxMana").innerHTML = player.maxMana;
+           
+        }
+                    , 500);
+      
+     //Cookies checking
+        var cookieChecker = function(){
+            if(typeof(Storage) !== "undefined"){
+                if(JSON.parse(localStorage.getItem("playerLevel")) != 1){
+                    alert("Welcome back");
+                }
+                else{
+                alert("Local storage available, game state will be saved");
+                }
+            }
+            else{
+            alert("No storage available, game will not be saved");
+            };
+        };
+        
+    //Cookie saving function - Works now
+        var cookieSaver = setInterval(function(){
+            localStorage.setItem("playerStr", player.str);
+            localStorage.setItem("playerCon", player.con);
+            localStorage.setItem("playerDex", player.dex);
+            localStorage.setItem("playerWis", player.wis);
+            localStorage.setItem("playerDeaths", player.deathCount);
+            localStorage.setItem("playerKills", player.killCount);
+            localStorage.setItem("playerGold", player.gold);
+            localStorage.setItem("playerLoot", player.loot);
+            localStorage.setItem("playerLevel", player.level);
+            localStorage.setItem("playerExp", player.experience);
+            localStorage.setItem("playerHealth", player.health);
+            localStorage.setItem("weaponUpgradeCount", weaponUpgradeCount);
+            localStorage.setItem("armourUpgradeCount", armourUpgradeCount);
+            localStorage.setItem("playerWeapon", player.weapon);
+            localStorage.setItem("playerArmour", player.worn);
+            localStorage.setItem("playerMana", player.mana);
+            localStorage.setItem("trainingAmount", trainingAmount);
+        },1000);
+       // used to reset stats 
+        var resetFunction = function(){
+        player={
+        con: 10,
+        wis: 10,
+        dex: 10,
+        str: 10,
+        maxMana: 50,
+        mana: 0,
+        maxHealth: 150,
+        health: 150,
+        damage: 0,
+        weapon: 0,
+        worn: 0,
+        armour: 0,
+        experience: 0,
+        level: 1,
+        gold: 300,
+        loot: 0,
+        killCount: 0,
+        deathCount: 0
+            };
+    weaponUpgradeCount= 1;
+    armourUpgradeCount= 1;
+    weaponUpgradeCost= 150;
+    armourUpgradeCost = 150;
+    weaponCostString= "Upgrade weapon: " + weaponUpgradeCost;
+    armourCostString= "Upgrade armour: " + armourUpgradeCost;
+    trainingAmount= 1;
+    trainingCost= 250;
+        };
+        
+        var fixFunction = function(){
+        /*weaponUpgradeCount = 1;
+        armourUpgradeCount = 1;
+        weaponUpgradeCost = 150;
+        armourUpgradeCost = 150;
+        weaponCostString = "Upgrade weapon: " + weaponUpgradeCost;
+        armourCostString = "Upgrade armour: " + armourUpgradeCost;
+        trainingAmount = 1;
+        trainingCost = 250;*/
+        alert("Fuck you James");
+        
+        };
+            
+            
+        
+</script>
+
+<p onload ="cookieChecker()"></p>
+</body>
+</html>
